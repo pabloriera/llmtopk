@@ -64,7 +64,7 @@ def generate_html_color_map(tokens, probs):
     return html
 
 
-def gradio_predict(question: str, k: int = 1):
+def gradio_predict_old(question: str, k: int = 1):
     results = predict(question, int(k))
     html = "<div style='display: flex; flex-direction: row;'>"
     for emission in results:
@@ -77,15 +77,43 @@ def gradio_predict(question: str, k: int = 1):
     return html
 
 
+html_pre = ""
+
+
+def gradio_predict(question: str,
+                   max_tokens: int = 4,
+                   k: int = 3):
+    global html_pre
+    results = predict(question,
+                      int(max_tokens),
+                      int(k))
+    html = "<div>"
+    for emission in results:
+        html += "<p style='margin: 10px; font-size: 25px;'>"
+        html += "<span style='color:blue'>"+question+"</span>"+emission
+        html += "</p>"
+        html_out = html + "</div>" + html_pre
+        yield html_out
+    html_pre = html_out
+
+
 demo = gr.Interface(
+    description="""<div>
+    <img width="362" height="126" src="https://liaa.dc.uba.ar/wp-content/uploads/2018/01/cropped-logo.png" class="custom-logo" alt="LIAA" itemprop="logo" srcset="https://liaa.dc.uba.ar/wp-content/uploads/2018/01/cropped-logo.png 362w, https://liaa.dc.uba.ar/wp-content/uploads/2018/01/cropped-logo-300x104.png 300w" sizes="(max-width: 362px) 100vw, 362px">
+    <p style="font-size: 25px; width:50%">
+    En el Laboratorio de Inteligencia Artificial Aplicada trabajamos estudiando como se comportan los humanos y los modelos de lenguaje en la tarea de continuar una frase</p>
+    </div>
+    """,
+    title="LIAA prompter",
     fn=gradio_predict,
     inputs=[gr.Textbox(
-        label="Continua frase", placeholder="Cual es la capital de Argentina?"
-    ),
-        gr.Number(label="Max Tokens", value=1)
-    ],
-    outputs=["html"],
+            label="Ingresar texto para continuar", value="Cual es la capital de Argentina?"
+            ),
+            gr.Number(label="Max Tokens", value=4),
+            gr.Number(label="Continuaciones", value=3)
+            ],
+    outputs=gr.HTML(),
     allow_flagging="never",
-)
+).queue()
 
-app = gr.mount_gradio_app(app, demo, path="/")
+app = gr.mount_gradio_app(app, demo, path="/",)

@@ -1,5 +1,8 @@
 import numpy as np
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, StoppingCriteriaList
+import torch
+
+torch.cuda.set_per_process_memory_fraction(0.8, 0)
 model_name = "vicuna-7B-1.1-HF"
 
 model = AutoModelForCausalLM.from_pretrained(

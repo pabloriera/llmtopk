@@ -67,11 +67,11 @@ html_pre = ""
 
 def gradio_predict(question: str,
                    max_tokens: int = 20,
-                   k: int = 1):
+                   k: int = 1,
+                   temp: float = 0.8):
     global html_pre
-    tokens, string, probs = predict(question,
-                                    int(max_tokens),
-                                    int(k))
+    tokens, string, probs = predict(
+        question, int(max_tokens), int(k), float(temp))
     print(question, string, probs)
     html = "<div>"
     html += "<p style='margin: 10px; font-size: 25px;'>"
@@ -91,7 +91,8 @@ demo = gr.Interface(
             label="Ingresar texto para continuar", value="¿Cuál es la capital de Argentina?"
             ),
             gr.Number(label="Max Tokens", value=20),
-            gr.Number(label="Top k", value=1)
+            gr.Number(label="Top k", value=1),
+            gr.Number(label="Temperatura", value=0.8),
             ],
     outputs=gr.HTML(),
     allow_flagging="never",

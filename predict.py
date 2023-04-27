@@ -11,16 +11,16 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 print("Model loaded")
 
 
-def predict(query: str, max_tokens: str, top_k: int):
+def predict(query: str, max_tokens: str, top_k: int, temperature: float = 0.8, repetition_penalty: float = 1.1):
     generation_config = GenerationConfig(
         num_beams=1,
         do_sample=True,
         top_k=top_k,
         early_stopping=True,
-        max_new_tokens=50,
-        temperature=0.8,
+        max_new_tokens=max_tokens,
+        temperature=temperature,
         eos_token_id=model.config.eos_token_id,
-        repetition_penalty=1.1,
+        repetition_penalty=repetition_penalty,
     )
     model.generation_config = generation_config
     inputs = tokenizer(

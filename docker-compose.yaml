@@ -1,0 +1,14 @@
+version: '3.9'
+
+name: llmtopk-docker
+
+services:
+  server:
+    container_name: llmtopk
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/model
+    ports:
+      - "9999:9999"

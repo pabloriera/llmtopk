@@ -98,13 +98,7 @@ def gradio_predict(question: str,
 
 
 demo = gr.Interface(
-    description="""<div>
-    <img width="362" height="126" src="https://liaa.dc.uba.ar/wp-content/uploads/2018/01/cropped-logo.png" class="custom-logo" alt="LIAA" itemprop="logo" srcset="https://liaa.dc.uba.ar/wp-content/uploads/2018/01/cropped-logo.png 362w, https://liaa.dc.uba.ar/wp-content/uploads/2018/01/cropped-logo-300x104.png 300w" sizes="(max-width: 362px) 100vw, 362px">
-    <p style="font-size: 25px; width:50%">
-    En el Laboratorio de Inteligencia Artificial Aplicada trabajamos estudiando como se comportan los humanos y los modelos de lenguaje en la tarea de continuar una frase</p>
-    </div>
-    """,
-    title="LIAA prompter",
+    css=".gradio-container {background-color: rgb(170, 197, 255);}",
     fn=gradio_predict,
     inputs=[gr.Textbox(
             label="Ingresar texto para continuar", value="Cual es la capital de Argentina?"

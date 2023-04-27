@@ -20,6 +20,7 @@ def predict(query: str, max_tokens: str, top_k: int):
         max_new_tokens=50,
         temperature=0.8,
         eos_token_id=model.config.eos_token_id,
+        repetition_penalty=1.1,
     )
     model.generation_config = generation_config
     inputs = tokenizer(

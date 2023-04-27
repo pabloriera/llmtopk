@@ -4,6 +4,16 @@ name: llmtopk-docker
 
 services:
   server:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility # nvidia-smi
+                - compute # CUDA. Required to avoid "CUDA version: N/A"
     container_name: llmtopk
     build:
       context: .

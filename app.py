@@ -1,3 +1,4 @@
+from predict import predict
 import typing
 
 from fastapi import FastAPI
@@ -7,10 +8,25 @@ import matplotlib
 import matplotlib.cm as cm
 import numpy as np
 
-from predict import predict
+
+def generate_html_color_map(string, tokens, probs):
+    cmap = cm.get_cmap('winter')
+    html = ""
+    for token, prob in zip(tokens, probs):
+        color = matplotlib.colors.to_hex(cmap(prob))
+        loc = string.find(token)
+        if loc + len(token) < len(string) and string[loc + len(token)] == " ":
+            lt = 1
+        else:
+            lt = 0
+        # print(string[loc + len(token)])
+        p, s, string = [string[:loc], string[loc:loc +
+                                             len(token)+lt], string[loc + len(token)+lt:]]
+        html += f'<span style="color:{color}">{s}</span>'
+    return html
+
 
 app = FastAPI()
-
 
 # --- fastapi /predict route ---
 
@@ -46,65 +62,36 @@ async def predict_api(request: Request):
     )
 
 
-# --- gradio demo ---
-
-def generate_html_color_map(tokens, probs):
-    cmap = cm.get_cmap('winter')
-    # Normalize the probabilities to the [0, 1] range
-    norm_probs = (probs - np.min(probs)) / (np.max(probs) - np.min(probs))
-
-    # div flow
-
-    html = ''
-    for token, prob in zip(tokens, norm_probs):
-        # Get the color corresponding to the probability from the colormap
-        color = matplotlib.colors.to_hex(cmap(prob))
-        # Add the token with the color as a list item
-        html += f'<p style="color:{color}">{token}</p>\n'
-    return html
-
-
-def gradio_predict_old(question: str, k: int = 1):
-    results = predict(question, int(k))
-    html = "<div style='display: flex; flex-direction: row;'>"
-    for emission in results:
-        strings = [t['string'] for t in emission]
-        probs = [t['prob'] for t in emission]
-        html += "<div style='margin: 10px;'>"
-        html += generate_html_color_map(strings, probs)
-        html += "</div>"
-    html += "</div>"
-    return html
-
-
 html_pre = ""
 
 
 def gradio_predict(question: str,
-                   max_tokens: int = 4,
-                   k: int = 3):
+                   max_tokens: int = 20,
+                   k: int = 1):
     global html_pre
-    results = predict(question,
-                      int(max_tokens),
-                      int(k))
+    tokens, string, probs = predict(question,
+                                    int(max_tokens),
+                                    int(k))
+    print(question, string, probs)
     html = "<div>"
-    for emission in results:
-        html += "<p style='margin: 10px; font-size: 25px;'>"
-        html += "<span style='color:blue'>"+question+"</span>"+emission
-        html += "</p>"
-        html_out = html + "</div>" + html_pre
-        yield html_out
+    html += "<p style='margin: 10px; font-size: 25px;'>"
+    html += question+" "
+    html += generate_html_color_map(string, tokens, probs)
+    html += "</p>"
+    html_out = html + "</div>" + html_pre
     html_pre = html_out
+
+    return html_out
 
 
 demo = gr.Interface(
     css=".gradio-container {background-color: rgb(170, 197, 255);}",
     fn=gradio_predict,
     inputs=[gr.Textbox(
-            label="Ingresar texto para continuar", value="Cual es la capital de Argentina?"
+            label="Ingresar texto para continuar", value="¿Cuál es la capital de Argentina?"
             ),
-            gr.Number(label="Max Tokens", value=4),
-            gr.Number(label="Continuaciones", value=3)
+            gr.Number(label="Max Tokens", value=20),
+            gr.Number(label="Top k", value=1)
             ],
     outputs=gr.HTML(),
     allow_flagging="never",
